@@ -1,5 +1,5 @@
 const validator = require("validator");
-const { isNull } = require("./common_validation");
+const { isNull } = require("./common");
 
 // Validate Registration
 const validateRegistration = (data) => {

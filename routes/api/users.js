@@ -9,7 +9,7 @@ const passport = require("passport");
 const {
   validateRegistration,
   validateLogin,
-} = require("../../validation/user_validation");
+} = require("../../validation/user");
 
 // @route GET /api/v1/users/test
 // @desc Tests users route
