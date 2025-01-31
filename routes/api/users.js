@@ -6,21 +6,30 @@ const jwt = require("jsonwebtoken");
 const User = require("../../models/User");
 const keys = require("../../config/keys");
 const passport = require("passport");
+const {
+  validateRegistration,
+  validateLogin,
+} = require("../../validation/user_validation");
 
 // @route GET /api/v1/users/test
 // @desc Tests users route
 // @access Public
+
 router.get("/test", (req, res) => res.json({ msg: "Test success" }));
 
 // @route POST /api/v1/users/register
 // @desc User registration
 // @access Public
+
 router.post("/registration", (req, res) => {
+  const { errors, isValid } = validateRegistration(req.body);
+  if (!isValid) return res.status(400).json(errors);
+
   User.findOne({ email: req.body.email })
     .then((user) => {
       if (user) {
         return res.status(409).json({
-          message: "A user with this email already exists.",
+          message: `A user with this email ${req.body.email} already exists.`,
         });
       }
 
@@ -69,6 +78,9 @@ router.post("/registration", (req, res) => {
 // @access Public
 
 router.post("/login", (req, res) => {
+  const { errors, isValid } = validateLogin(req.body);
+  if (!isValid) return res.status(400).json(errors);
+
   const email = req.body.email;
   const password = req.body.password;
 

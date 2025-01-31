@@ -6,6 +6,7 @@ const passport = require("passport");
 const users = require("./routes/api/users");
 const profile = require("./routes/api/profile");
 const posts = require("./routes/api/posts");
+// const { passport: userPassport } = ;
 
 const app = express();
 
@@ -25,7 +26,8 @@ app.get("/", (req, res) => res.send("Hello from Sam"));
 // Passport config
 app.use(passport.initialize());
 
-require("./config/passport")(passport);
+// require("./config/user_passport")(passport);
+require("./config/userPassport")(passport);
 
 // Routes
 app.use("/api/v1/users", users);

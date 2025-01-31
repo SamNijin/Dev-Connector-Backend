@@ -15,13 +15,14 @@ opts.secretOrKey = keys.userSecret;
 
 module.exports = (passport) => {
   passport.use(
+    "jwt",
     new JwtStrategy(opts, (jwtPayload, done) => {
       User.findById(jwtPayload.id)
         .then((user) => {
           if (user) {
             done(null, user);
           } else {
-            done(null, false);
+            done(null, false, { message: "Token is not valid or expired" });
           }
         })
         .catch((err) => console.log(err));
