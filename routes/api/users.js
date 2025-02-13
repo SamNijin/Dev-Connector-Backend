@@ -21,56 +21,45 @@ router.get("/test", (req, res) => res.json({ msg: "Test success" }));
 // @desc User registration
 // @access Public
 
-router.post("/registration", (req, res) => {
+router.post("/registration", async (req, res) => {
+  // Add async here
   const { errors, isValid } = validateRegistration(req.body);
   if (!isValid) return res.status(400).json(errors);
 
-  User.findOne({ email: req.body.email })
-    .then((user) => {
-      if (user) {
-        return res.status(409).json({
-          message: `A user with this email ${req.body.email} already exists.`,
-        });
-      }
-
-      const avatar = gravatar.url(req.body.email, {
-        s: "200", // Size
-        r: "pg", // Rating
-        d: "mm", // Default
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (user) {
+      return res.status(409).json({
+        message: `A user with this email ${req.body.email} already exists.`,
       });
+    }
 
-      const newUser = new User({
-        ...req.body,
-        avatar,
-      });
-
-      bcrypt
-        .genSalt(10)
-        .then((salt) => bcrypt.hash(newUser.password, salt))
-        .then((hash) => {
-          newUser.password = hash;
-          return newUser.save();
-        })
-        .then((savedUser) => {
-          res.status(201).json({
-            message: `User created: ${savedUser.name}`,
-          });
-        })
-        .catch((error) => {
-          res.status(500).json({
-            success: false,
-            message: "An error occurred while creating the user.",
-            error: error.message,
-          });
-        });
-    })
-    .catch((error) => {
-      res.status(500).json({
-        success: false,
-        message: "Error checking user existence.",
-        error: error.message,
-      });
+    const avatar = gravatar.url(req.body.email, {
+      s: "200", // Size
+      r: "pg", // Rating
+      d: "mm", // Default
     });
+
+    const newUser = new User({
+      ...req.body,
+      avatar,
+    });
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newUser.password, salt);
+    newUser.password = hashedPassword;
+
+    const savedUser = await newUser.save();
+    res.status(201).json({
+      message: `User created: ${savedUser.name}`,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while creating the user.",
+      error: error.message,
+    });
+  }
 });
 
 // @route POST /api/v1/users/login
