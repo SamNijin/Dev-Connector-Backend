@@ -250,4 +250,105 @@ router.post(
   }
 );
 
+// @route DELETE /api/v1/profile/experience/:edu_id
+// @desc Delete experience
+// @access Private
+
+router.delete(
+  "/experience/:exp_id",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const profile = await Profile.findOne({ user: req.user.id });
+
+      const removeIndex = profile.experience
+        .map((item) => item.id)
+        .indexOf(req.params.exp_id);
+
+      if (removeIndex === -1) {
+        return res
+          .status(404)
+          .json({ message: "Specified experience not available" });
+      }
+      profile.experience.splice(removeIndex, 1);
+
+      const saveUpdatedProfile = await profile.save();
+      if (saveUpdatedProfile) {
+        return res
+          .status(200)
+          .json({ message: "experience removed successfully" });
+      } else {
+        return res.status(400).json({ message: "An error occured" });
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+);
+
+// @route DELETE /api/v1/profile/education/:edu_id
+// @desc Delete Education
+// @access Private
+
+router.delete(
+  "/education/:edu_id",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const profile = await Profile.findOne({ user: req.user.id });
+
+      const removeIndex = profile.education
+        .map((item) => item.id)
+        .indexOf(req.params.edu_id);
+
+      if (removeIndex === -1) {
+        return res
+          .status(404)
+          .json({ message: "Specified education not available" });
+      }
+      profile.education.splice(removeIndex, 1);
+
+      const saveUpdatedProfile = await profile.save();
+      if (saveUpdatedProfile) {
+        return res
+          .status(200)
+          .json({ message: "Education removed successfully" });
+      } else {
+        return res.status(400).json({ message: "An error occured" });
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+);
+
+router.delete(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      // Deleting profile
+      const profile = await Profile.findOneAndDelete({ user: req.user.id });
+      if (!profile) {
+        return res
+          .status(400)
+          .json({ message: "Unable to delete the profile" });
+      }
+
+      // Deleting user
+      const user = await User.findByIdAndDelete(req.user.id);
+      if (!user) {
+        return res.status(400).json({ message: "Unable to delete the user" });
+      }
+
+      return res.json({ message: "User deleted successfully" });
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+);
+
 module.exports = router;
